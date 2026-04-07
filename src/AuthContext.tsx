@@ -118,9 +118,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao fazer login:", error);
-      showNotification("Erro ao fazer login. Ocorreu um problema com a autenticação.", "error");
+      let message = "Erro ao fazer login. Ocorreu um problema com a autenticação.";
+      
+      if (error.code === 'auth/popup-blocked') {
+        message = "O navegador bloqueou o pop-up de login. Por favor, permita pop-ups para este site.";
+      } else if (error.code === 'auth/unauthorized-domain') {
+        message = "Este domínio não está autorizado no Firebase Auth. Por favor, adicione o domínio atual à lista de domínios autorizados na consola do Firebase.";
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        message = "O pedido de login foi cancelado.";
+      } else if (error.message) {
+        message = `Erro de Autenticação: ${error.message}`;
+      }
+      
+      showNotification(message, "error");
     }
   };
 
