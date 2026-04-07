@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc, updateDoc, onSnapshot, increment } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { handleFirestoreError, OperationType } from './lib/utils';
 import { useNotification } from './components/NotificationProvider';
@@ -116,7 +116,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async () => {
     try {
+      await setPersistence(auth, browserLocalPersistence);
       const provider = new GoogleAuthProvider();
+      // Force account selection to help with session issues
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
     } catch (error: any) {
       console.error("Erro ao fazer login:", error);
@@ -128,6 +131,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         message = "Este domínio não está autorizado no Firebase Auth. Por favor, adicione o domínio atual à lista de domínios autorizados na consola do Firebase.";
       } else if (error.code === 'auth/cancelled-popup-request') {
         message = "O pedido de login foi cancelado.";
+      } else if (error.code === 'auth/internal-error' || error.message?.includes('missing initial state')) {
+        message = "Erro de sessão: O seu navegador limpou os dados de login. Tente desativar o 'Bloqueio de Cookies de Terceiros' ou o 'Modo Incógnito'.";
       } else if (error.message) {
         message = `Erro de Autenticação: ${error.message}`;
       }
