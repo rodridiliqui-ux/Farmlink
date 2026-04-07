@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDo
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { handleFirestoreError, OperationType } from '../lib/utils';
+import { useNotification } from './NotificationProvider';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard, 
@@ -42,6 +43,7 @@ import { VerificationCenter } from './VerificationCenter';
 
 export const Dashboard: React.FC = () => {
   const { user, profile, seedProducts, switchRole, profileLoading } = useAuth();
+  const { showNotification, confirmAction } = useNotification();
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'settings' | 'deliveries' | 'verification'>('overview');
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -143,7 +145,7 @@ export const Dashboard: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 500000) {
-        alert("A imagem é muito grande. Por favor, escolha uma imagem menor que 500KB.");
+        showNotification("A imagem é muito grande. Por favor, escolha uma imagem menor que 500KB.", "error");
         return;
       }
       const reader = new FileReader();
@@ -162,7 +164,7 @@ export const Dashboard: React.FC = () => {
     
     try {
       if (!newProduct.imageUrl) {
-        alert("Por favor, selecione uma imagem.");
+        showNotification("Por favor, selecione uma imagem.", "error");
         setUploading(false);
         return;
       }
@@ -191,10 +193,10 @@ export const Dashboard: React.FC = () => {
         lng: profile?.lng || 13.289, 
         imageUrl: '' 
       });
-      alert("Produto publicado com sucesso!");
+      showNotification("Produto publicado com sucesso!", "success");
     } catch (error: any) {
       console.error("Erro ao publicar:", error);
-      alert("Erro ao publicar produto. Verifique a sua ligação.");
+      showNotification("Erro ao publicar produto. Verifique a sua ligação.", "error");
     } finally {
       setUploading(false);
     }
@@ -218,7 +220,7 @@ export const Dashboard: React.FC = () => {
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
-      alert("Erro ao atualizar estado da encomenda.");
+      showNotification("Erro ao atualizar estado da encomenda.", "error");
     }
   };
 
@@ -230,10 +232,10 @@ export const Dashboard: React.FC = () => {
         transporterName: profile?.name || user.displayName,
         status: 'accepted_by_transporter'
       });
-      alert("Entrega aceite com sucesso!");
+      showNotification("Entrega aceite com sucesso!", "success");
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
-      alert("Erro ao aceitar entrega.");
+      showNotification("Erro ao aceitar entrega.", "error");
     }
   };
 
@@ -247,7 +249,7 @@ export const Dashboard: React.FC = () => {
           rejectedBy: [...rejectedBy, user.uid]
         });
       }
-      alert("Pedido de transporte recusado.");
+      showNotification("Pedido de transporte recusado.", "info");
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
     }
@@ -259,16 +261,18 @@ export const Dashboard: React.FC = () => {
         paymentStatus: 'paid',
         status: 'accepted' // Automatically accept when paid
       });
-      alert("Pagamento confirmado e pedido aceite!");
+      showNotification("Pagamento confirmado e pedido aceite!", "success");
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
     }
   };
 
   const deleteProduct = async (id: string) => {
-    if (confirm('Tem a certeza que deseja eliminar este produto?')) {
+    const confirmed = await confirmAction('Tem a certeza que deseja eliminar este produto?');
+    if (confirmed) {
       try {
         await deleteDoc(doc(db, 'products', id));
+        showNotification("Produto eliminado com sucesso.", "success");
       } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
       }
@@ -322,7 +326,7 @@ export const Dashboard: React.FC = () => {
         reviewed: true
       });
 
-      alert("Avaliação enviada com sucesso!");
+      showNotification("Avaliação enviada com sucesso!", "success");
       setReviewingOrder(null);
       setReviewRating(5);
       setReviewComment('');

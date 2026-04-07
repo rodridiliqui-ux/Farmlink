@@ -3,6 +3,7 @@ import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut 
 import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { handleFirestoreError, OperationType } from './lib/utils';
+import { useNotification } from './components/NotificationProvider';
 
 interface UserProfile {
   uid: string;
@@ -49,6 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
+
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     let unsubscribeProfile: () => void = () => {};
@@ -117,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-      alert("Erro ao fazer login. Por favor, verifique se os pop-ups estão permitidos.");
+      showNotification("Erro ao fazer login. Ocorreu um problema com a autenticação.", "error");
     }
   };
 
@@ -150,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: serverTimestamp(),
         });
       }
-      alert("Produtos simulados com sucesso!");
+      showNotification("Produtos simulados com sucesso!", "success");
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'products');
     }

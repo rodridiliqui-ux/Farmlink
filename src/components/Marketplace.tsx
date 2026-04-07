@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { handleFirestoreError, OperationType } from '../lib/utils';
+import { useNotification } from './NotificationProvider';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, ShoppingCart, Tag, Plus, Check, Loader2, Info, Star, ShieldCheck, MapPin, User } from 'lucide-react';
 import { MapView } from './MapView';
 
 export const Marketplace: React.FC = () => {
   const { user, profile } = useAuth();
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export const Marketplace: React.FC = () => {
 
   const addToCart = async (product: any) => {
     if (!user) {
-      alert("Por favor, faça login para adicionar ao carrinho.");
+      showNotification("Por favor, faça login para adicionar ao carrinho.", "info");
       return;
     }
     setAddingToCart(product.id);

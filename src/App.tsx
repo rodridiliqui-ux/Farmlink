@@ -11,6 +11,8 @@ import { RegistrationQuestionnaire } from './components/RegistrationQuestionnair
 import { Loader2 } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 
+import { NotificationProvider } from './components/NotificationProvider';
+
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -62,11 +64,13 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </NotificationProvider>
     </ErrorBoundary>
   );
 }
