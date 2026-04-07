@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { LogIn, LogOut, User, Tractor, ShoppingCart, Truck, LayoutDashboard, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { LogIn, LogOut, User, Tractor, ShoppingCart, Truck, LayoutDashboard, ShoppingBag, ShieldCheck, HelpCircle } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { CartButton } from './CartButton';
 
@@ -34,6 +34,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
                   <LayoutDashboard className="w-4 h-4" /> Painel
                 </Link>
               )}
+              <Link to="/support" className="text-sm font-bold text-gray-600 hover:text-green-600 transition-colors flex items-center gap-2">
+                <HelpCircle className="w-4 h-4" /> Ajuda
+              </Link>
             </div>
           </div>
 

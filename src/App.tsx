@@ -6,6 +6,8 @@ import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { Marketplace } from './components/Marketplace';
 import { Dashboard } from './components/Dashboard';
+import { Support } from './components/Support';
+import { Footer } from './components/Footer';
 import { CartList } from './components/CartList';
 import { RegistrationQuestionnaire } from './components/RegistrationQuestionnaire';
 import { Loader2 } from 'lucide-react';
@@ -55,8 +57,11 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } 
         />
+        <Route path="/support" element={<Support />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+
+      <Footer />
     </div>
   );
 };
